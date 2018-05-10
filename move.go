@@ -3,6 +3,8 @@ package pkgmv
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 type moveOptions struct {
@@ -17,14 +19,22 @@ func move(fromPkg, toPkg string, opts moveOptions) error {
 		return errPackageNotFound(err)
 	}
 
-	if _, err := os.Stat(toPkg); err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(toPkg, 0660)
+	if !opts.DryRun {
+		if _, err := os.Stat(toPkg); err == nil {
+			// the package should never exist
+			// we'll simply bail and not worry about overwriting and bad behavior
+			return errPackageAlreadyExists
+		}
+	}
+
+	for _, f := range pkgFiles {
+		destinationPath := filepath.Join(toPkg, strings.Replace(f.Path, fromPkg, "", -1))
+		if f.FileInfo.IsDir() {
+			err = os.MkdirAll(destinationPath, 0660)
 			if err != nil {
 				return err
-			} else {
-				fmt.Println("made", toPkg)
 			}
+			fmt.Println("made", destinationPath)
 		}
 	}
 
@@ -34,7 +44,5 @@ func move(fromPkg, toPkg string, opts moveOptions) error {
 		return err
 	}
 
-	fmt.Println(pkgFiles)
-	fmt.Println(fromPkg, toPkg)
 	return nil
 }

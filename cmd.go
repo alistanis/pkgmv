@@ -26,9 +26,7 @@ func errPackageNotFound(err error) error {
 	return fmt.Errorf("pkgmv: package to move not found, %s", err)
 }
 
-func errPackageAlreadyExists(err error) error {
-	return fmt.Errorf("pkgmv: package destination already exists, if you wish to overwrite, remove it, %s", err)
-}
+var errPackageAlreadyExists = fmt.Errorf("pkgmv: package destination already exists, if you wish to overwrite, remove it and rerun pkgmv")
 
 func addMoveCmd(root *cobra.Command) {
 	var mvOpts moveOptions
